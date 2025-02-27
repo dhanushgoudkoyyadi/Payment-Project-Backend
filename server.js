@@ -9,14 +9,20 @@ const User = require("../models/payment-schema");
 const fs = require('fs');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+  }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.get('/favicon.ico', (req, res) => {
+    res.status(204).end(); // No content response
+  });
 // JWT Secret key - should be in env variables in production
 const JWT_SECRET = "secretkey";
 
-mongoose.connect("mongodb+srv://dhanush:L8Xm0Ye8kO97lVop@cluster0.lecdq.mongodb.net/backend", {
+mongoose.connect("mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha",{
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log("DATABASE IS CONNECTED"))
