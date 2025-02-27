@@ -5,14 +5,16 @@ const cors = require('cors');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const User = require("../models/payment-schema");
+const User = require("./models/payment-schema");
+
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-mongoose.connect("mongodb+srv://dhanush:L8Xm0Ye8kO97lVop@cluster0.lecdq.mongodb.net/backend");
+// mongoose.connect("mongodb+srv://dhanush:L8Xm0Ye8kO97lVop@cluster0.lecdq.mongodb.net/backend");
+mongoose.connect("mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha");
 
 // Ensure uploads directory exists
 const fs = require('fs');
@@ -35,13 +37,22 @@ const upload = multer({ storage });
 // Register User
 app.post("/register", async (req, res) => {
     try {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ message: 'Username and password are required' });
+        const { username, password,email,mobileNumber,gender,SelectedCourse } = req.body;
+        if (!username || !password ||!email ||!mobileNumber || !gender || !SelectedCourse) {
+            return res.status(400).json({ message: 'All Fields  are required' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword, StudentPaymentDetails: [] });
+        //const user = new User({ username, password: hashedPassword, StudentPaymentDetails: [] });
+        const user = new User({
+            username,
+            password: hashedPassword,
+            email,
+            mobileNumber,
+            gender,
+            SelectedCourse,
+            StudentPaymentDetails: []
+        });
         await user.save();
 
         const token = jwt.sign({ id: user._id, username }, "secretkey", { expiresIn: '1h' });
