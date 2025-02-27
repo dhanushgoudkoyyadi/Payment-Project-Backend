@@ -5,6 +5,7 @@ const cors = require('cors');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
 const User = require("./models/payment-schema");
 
 
@@ -17,7 +18,22 @@ app.use(bodyParser.json());
 mongoose.connect("mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha");
 
 // Ensure uploads directory exists
-const fs = require('fs');
+
+
+const JWT_SECRET = "your_jwt_secret_key";
+const authenticateToken = (req, res, next) => {
+  const token = req.header("Authorization")?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized access" });
+  }
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    req.user = user;
+    next();
+  });
+};
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
@@ -37,8 +53,9 @@ const upload = multer({ storage });
 // Register User
 app.post("/register", async (req, res) => {
     try {
-        const { username, password,email,mobileNumber,gender,SelectedCourse } = req.body;
-        if (!username || !password ||!email ||!mobileNumber || !gender || !SelectedCourse) {
+        console.log("Received dtaa:"+req.body);
+        const { username, password,email,mobileNumber,gender,selectedCourse } = req.body;
+        if (!username || !password ||!email ||!mobileNumber || !gender || !selectedCourse) {
             return res.status(400).json({ message: 'All Fields  are required' });
         }
 
@@ -55,7 +72,7 @@ app.post("/register", async (req, res) => {
         });
         await user.save();
 
-        const token = jwt.sign({ id: user._id, username }, "secretkey", { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id, username }, "JWT_SECRET", { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {
@@ -63,7 +80,15 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ message: "Server error. Please try again." });
     }
 });
-
+app.get("/users",async(req,res)=>{
+    try{
+        const users=await User.find({},"username");
+        res.json(users)
+    }catch(error){
+        console.error("Error fetching users:",error);
+        res.status(500).json({message:"Server error.Please try again"});
+    }
+})
 // Login User
 app.post("/login", async (req, res) => {
     try {
@@ -73,8 +98,12 @@ app.post("/login", async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
 
-        const token = jwt.sign({ id: user._id, username }, "secretkey", { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id, username }, "JWT_SECRET", { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {
