@@ -7,8 +7,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const User = require("./models/payment-schema");
-
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,10 +14,6 @@ app.use(bodyParser.json());
 
 // mongoose.connect("mongodb+srv://dhanush:L8Xm0Ye8kO97lVop@cluster0.lecdq.mongodb.net/backend");
 mongoose.connect("mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha");
-
-// Ensure uploads directory exists
-
-
 const JWT_SECRET = "your_jwt_secret_key";
 const authenticateToken = (req, res, next) => {
   const token = req.header("Authorization")?.split(" ")[1];
@@ -67,12 +61,12 @@ app.post("/register", async (req, res) => {
             email,
             mobileNumber,
             gender,
-            SelectedCourse,
+            selectedCourse,
             StudentPaymentDetails: []
         });
         await user.save();
 
-        const token = jwt.sign({ id: user._id, username }, "JWT_SECRET", { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id, username }, JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {
@@ -80,13 +74,15 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ message: "Server error. Please try again." });
     }
 });
+
+
 app.get("/users",async(req,res)=>{
     try{
-        const users=await User.find({},"username");
+        const users=await User.find({});
         res.json(users)
     }catch(error){
         console.error("Error fetching users:",error);
-        res.status(500).json({message:"Server error.Please try again"});
+        res.status(500).json()
     }
 })
 // Login User
@@ -103,7 +99,7 @@ app.post("/login", async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ id: user._id, username }, "JWT_SECRET", { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id, username }, JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ token });
     } catch (error) {
@@ -115,25 +111,25 @@ app.post("/login", async (req, res) => {
 // File Upload
 app.post("/details", upload.single('file'), async (req, res) => {
     try {
-        console.log("File received:", req.file); // Debugging
+        console.log("File received:", req.file);
+     
 
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
-        const { userId, filename } = req.body;
+        const { userId, filename ,amount,transactionId} = req.body;
         const { path, size } = req.file;
 
-        if (!userId) {
-            return res.status(400).json({ message: "User ID is required" });
+        if (!userId || !filename || !amount ||!transactionId) {
+            return res.status(400).json({ message: "All Fields are required" });
         }
 
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-
-        const newPayment = { filename, path, size };
+        const newPayment = { filename, path, size ,amount,transactionId};
         user.StudentPaymentDetails.push(newPayment);
         await user.save();
 
@@ -143,8 +139,31 @@ app.post("/details", upload.single('file'), async (req, res) => {
         res.status(500).json({ message: "Server error. Please try again." });
     }
 });
+app.post("/add-payment", async (req, res) => {
+    try {
+        //console.log("Received request for updating payment:", req.params, req.body);
+        const { userId,amount } = req.body;
+        if (!amount || !userId) {
+            return res.status(400).json({ message: "Payment amount is required" });
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+      user.paymentAmount=amount;
+     
 
-const PORT = 5555;
+    // user.paymentAmount.push(amount); 
+       await user.save();
+        res.status(200).json({ message: "Payment added successfully", user });
+    } catch (error) {
+        console.error("Error updating payment:", error);
+        res.status(500).json({ message: "Server error. Please try again." });
+    }
+});
+
+
+const PORT = 5567;
 app.listen(PORT, () => {
     console.log(`The server is running on port number ${PORT}`);
 });
