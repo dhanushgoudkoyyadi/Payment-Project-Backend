@@ -163,7 +163,14 @@ app.post("/add-payment", async (req, res) => {
 });
 app.get("/users/:id", async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const userId = req.params.id;
+
+        // Check if userId is undefined or not a valid ObjectId
+        if (!userId || userId === 'undefined') {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -176,7 +183,7 @@ app.get("/users/:id", async (req, res) => {
 
 
 
-const PORT = 5567;
+const PORT = 5547;
 app.listen(PORT, () => {
     console.log(`The server is running on port number ${PORT}`);
 });
