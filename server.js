@@ -176,7 +176,7 @@ app.get("/users/:id", async (req, res) => {
 
 
 
-const PORT = 5567;
+const PORT = 5547;
 app.listen(PORT, () => {
     console.log(`The server is running on port number ${PORT}`);
 });
