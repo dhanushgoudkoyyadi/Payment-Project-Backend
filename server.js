@@ -213,7 +213,7 @@ app.post('/addnewcourse', async (req, res) => {
 });
 
 // Server Setup
-const PORT = 5567;
+const PORT = 5557;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
