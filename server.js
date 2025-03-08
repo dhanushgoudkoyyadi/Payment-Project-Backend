@@ -57,7 +57,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
+    limits: { fileSize: 10 * 1024 * 1024 }, 
 });
 
 // User Registration
@@ -241,7 +241,7 @@ app.post("/addcohort",(req,res)=>{
         title:req.body.title
     });
     newCohort.save()
-    then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
+    .then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
     .catch(err => res.status(500).json({ error: err.message }));
 })
 
