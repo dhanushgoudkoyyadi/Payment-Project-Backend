@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const User = require('./models/payment-schema');
+const Cohorts=require('./models/cohort-schema');
 
 const app = express();
 app.use(cors());
@@ -56,7 +57,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
+    limits: { fileSize: 10 * 1024 * 1024 }, 
 });
 
 // User Registration
@@ -248,7 +249,24 @@ app.post('/addtech', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 
+=======
+app.post("/addcohort",(req,res)=>{
+    var newCohort=new Cohorts({
+        title:req.body.title
+    });
+    newCohort.save()
+    .then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
+    .catch(err => res.status(500).json({ error: err.message }));
+})
+
+app.get("/listcohorts",(Req,res)=>{
+    Cohorts.find()
+        .then(cohorts=>res.json(cohorts))
+        .catch(err=>res.status(500).json({error:err.message}));
+})
+>>>>>>> c169ccd64f2aaf98042e149e40e42f481289b515
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
