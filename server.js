@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const User = require('./models/payment-schema');
+const Cohorts=require('./models/cohort-schema');
 
 const app = express();
 app.use(cors());
@@ -240,7 +241,7 @@ app.post("/addcohort",(req,res)=>{
         title:req.body.title
     });
     newCohort.save()
-    then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
+    .then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
     .catch(err => res.status(500).json({ error: err.message }));
 })
 
