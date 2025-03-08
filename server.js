@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const User = require('./models/payment-schema');
+const Cohorts=require('./models/cohort-schema');
 
 const app = express();
 app.use(cors());
@@ -244,6 +245,11 @@ app.post("/addcohort",(req,res)=>{
     .catch(err => res.status(500).json({ error: err.message }));
 })
 
+app.get("/listcohorts",(Req,res)=>{
+    Cohorts.find()
+        .then(cohorts=>res.json(cohorts))
+        .catch(err=>res.status(500).json({error:err.message}));
+})
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
