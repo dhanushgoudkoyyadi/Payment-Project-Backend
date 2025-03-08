@@ -235,6 +235,15 @@ app.post('/addtech', async (req, res) => {
     }
 });
 
+app.post("/addcohort",(req,res)=>{
+    var newCohort=new Cohorts({
+        title:req.body.title
+    });
+    newCohort.save()
+    then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
+    .catch(err => res.status(500).json({ error: err.message }));
+})
+
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {

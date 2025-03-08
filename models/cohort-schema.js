@@ -8,5 +8,5 @@ const Cohort = new mongoose.Schema({
     students:[students]
 });
 
-const Students = mongoose.model('Cohorts', Cohort);
-module.exports = Students;
+const Cohorts = mongoose.model('Cohorts', Cohort);
+module.exports = Cohorts;
