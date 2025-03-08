@@ -211,6 +211,38 @@ app.post('/addnewcourse', async (req, res) => {
         res.status(500).json({ message: 'Server error. Please try again.' });
     }
 });
+app.post('/addtech', async (req, res) => {
+    try {
+        const { userId,  mobileNumber, tech } = req.body;
+        console.log(req.body);
+        if (!mobileNumber || !tech) {
+            return res.status(400).json({ message: 'All Fields are required' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const newtech = { mobileNumber, technologies: tech };
+        user.newCourseDetails.push(newtech);
+        await user.save();
+
+        res.status(201).json({ message: 'New Technology added successfully', course: newCourse });
+    } catch (error) {
+        console.error('Error adding technology details:', error);
+        res.status(500).json({ message: 'Server error. Please try again.' });
+    }
+});
+
+app.post("/addcohort",(req,res)=>{
+    var newCohort=new Cohorts({
+        title:req.body.title
+    });
+    newCohort.save()
+    then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
+    .catch(err => res.status(500).json({ error: err.message }));
+})
 
 // Server Setup
 const PORT = 5557;
