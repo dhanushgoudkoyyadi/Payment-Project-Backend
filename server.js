@@ -197,9 +197,9 @@ app.get('/users/:id', async (req, res) => {
 // Add New Course
 app.post('/addnewcourse', async (req, res) => {
     try {
-        const { userId, email, mobileNumber, selectedCourse } = req.body;
-        console.log(req.body);
-        if (!mobileNumber || !email || !selectedCourse) {
+        const { userId,selectedCourse } = req.body;
+       
+        if (  !selectedCourse) {
             return res.status(400).json({ message: 'All Fields are required' });
         }
 
@@ -208,7 +208,7 @@ app.post('/addnewcourse', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const newCourse = { mobileNumber, email, course: selectedCourse };
+        const newCourse = {   course: selectedCourse };
         user.newCourseDetails.push(newCourse);
         await user.save();
 
@@ -218,6 +218,36 @@ app.post('/addnewcourse', async (req, res) => {
         res.status(500).json({ message: 'Server error. Please try again.' });
     }
 });
+app.post('/addtech', async (req, res) => {
+    try {
+        const { userId,  tech } = req.body;
+
+        if ( !Array.isArray(tech) || tech.length === 0) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Initialize Technologies array if not present
+        if (!user.Technologies) {
+            user.Technologies = [];
+        }
+
+        // Add new technology data
+        const newtech = {  technologies: tech };
+        user.Technologies.push(newtech);
+
+        await user.save();
+        res.status(201).json({ message: 'New Technology added successfully', technologies: newtech });
+    } catch (error) {
+        console.error('Error adding technology details:', error);
+        res.status(500).json({ message: 'Server error. Please try again.' });
+    }
+});
+
 
 // Server Setup
 const PORT = 5557;
