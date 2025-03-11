@@ -177,7 +177,14 @@ app.post('/add-payment', async (req, res) => {
 // Get Single User
 app.get('/users/:id', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const userId = req.params.id;
+
+        // Check if userId is undefined or not a valid ObjectId
+        if (!userId || userId === 'undefined') {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -191,9 +198,9 @@ app.get('/users/:id', async (req, res) => {
 // Add New Course
 app.post('/addnewcourse', async (req, res) => {
     try {
-        const { userId, email, mobileNumber, selectedCourse } = req.body;
-        console.log(req.body);
-        if (!mobileNumber || !email || !selectedCourse) {
+        const { userId,selectedCourse } = req.body;
+       
+        if (  !selectedCourse) {
             return res.status(400).json({ message: 'All Fields are required' });
         }
 
@@ -202,7 +209,7 @@ app.post('/addnewcourse', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const newCourse = { mobileNumber, email, course: selectedCourse };
+        const newCourse = {   course: selectedCourse };
         user.newCourseDetails.push(newCourse);
         await user.save();
 
@@ -214,10 +221,10 @@ app.post('/addnewcourse', async (req, res) => {
 });
 app.post('/addtech', async (req, res) => {
     try {
-        const { userId,  mobileNumber, tech } = req.body;
-        console.log(req.body);
-        if (!mobileNumber || !tech) {
-            return res.status(400).json({ message: 'All Fields are required' });
+        const { userId,  tech } = req.body;
+
+        if ( !Array.isArray(tech) || tech.length === 0) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
 
         const user = await User.findById(userId);
@@ -225,17 +232,26 @@ app.post('/addtech', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const newtech = { mobileNumber, technologies: tech };
-        user.newCourseDetails.push(newtech);
-        await user.save();
+        // Initialize Technologies array if not present
+        if (!user.Technologies) {
+            user.Technologies = [];
+        }
 
-        res.status(201).json({ message: 'New Technology added successfully', course: newCourse });
+        // Add new technology data
+        const newtech = {  technologies: tech };
+        user.Technologies.push(newtech);
+
+        await user.save();
+        res.status(201).json({ message: 'New Technology added successfully', technologies: newtech });
     } catch (error) {
         console.error('Error adding technology details:', error);
         res.status(500).json({ message: 'Server error. Please try again.' });
     }
 });
 
+<<<<<<< HEAD
+
+=======
 app.post("/addcohort",(req,res)=>{
     var newCohort=new Cohorts({
         title:req.body.title
@@ -250,6 +266,7 @@ app.get("/listcohorts",(Req,res)=>{
         .then(cohorts=>res.json(cohorts))
         .catch(err=>res.status(500).json({error:err.message}));
 })
+<<<<<<< HEAD
 app.post("/addstudent", async (req, res) => {
         const { cohortTitle, name } = req.body;
         const cohort = await Cohorts.findOne({ title: cohortTitle });
@@ -262,6 +279,9 @@ app.post("/addstudent", async (req, res) => {
         res.status(201).json({ message: "Student added successfully", cohort });
     
 });
+=======
+>>>>>>> c169ccd64f2aaf98042e149e40e42f481289b515
+>>>>>>> 2bc825d68d308b0760b5f0f1e8e609ec050a9115
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
