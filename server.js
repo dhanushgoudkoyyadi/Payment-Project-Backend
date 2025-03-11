@@ -249,9 +249,6 @@ app.post('/addtech', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-
-=======
 app.post("/addcohort",(req,res)=>{
     var newCohort=new Cohorts({
         title:req.body.title
@@ -266,7 +263,6 @@ app.get("/listcohorts",(Req,res)=>{
         .then(cohorts=>res.json(cohorts))
         .catch(err=>res.status(500).json({error:err.message}));
 })
->>>>>>> c169ccd64f2aaf98042e149e40e42f481289b515
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
