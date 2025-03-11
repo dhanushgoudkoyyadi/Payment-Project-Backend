@@ -250,6 +250,18 @@ app.get("/listcohorts",(Req,res)=>{
         .then(cohorts=>res.json(cohorts))
         .catch(err=>res.status(500).json({error:err.message}));
 })
+app.post("/addstudent", async (req, res) => {
+        const { cohortTitle, name } = req.body;
+        const cohort = await Cohorts.findOne({ title: cohortTitle });
+        if (!cohort) {
+            return res.status(404).json({ error: "Cohort not found" });
+        }
+        cohort.students.push({ name });
+        await cohort.save();
+
+        res.status(201).json({ message: "Student added successfully", cohort });
+    
+});
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
