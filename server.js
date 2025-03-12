@@ -248,6 +248,7 @@ app.post('/addtech', async (req, res) => {
         res.status(500).json({ message: 'Server error. Please try again.' });
     }
 });
+
 app.post("/addcohort",(req,res)=>{
     var newCohort=new Cohorts({
         title:req.body.title
@@ -276,6 +277,62 @@ app.post("/addstudent", async (req, res) => {
     
 });
 
+app.delete("/removeStudent", async (req, res) => {
+    try {
+        const { cohortTitle, studentName } = req.body;
+
+        if (!cohortTitle || !studentName) {
+            return res.status(400).json({ message: "Cohort title and student name are required." });
+        }
+
+        const cohort = await Cohorts.findOne({ title: cohortTitle });
+        if (!cohort) {
+            return res.status(404).json({ message: "Cohort not found." });
+        }
+
+        // Find and remove the student
+        const studentIndex = cohort.students.findIndex(
+            (student) => student.name === studentName
+        );
+
+        if (studentIndex === -1) {
+            return res.status(404).json({ message: "Student not found in the cohort." });
+        }
+
+        cohort.students.splice(studentIndex, 1); // Remove the student
+        await cohort.save();
+
+        res.status(200).json({ message: "Student removed successfully.", cohort });
+    } catch (error) {
+        console.error("Error removing student:", error);
+        res.status(500).json({ message: "Server error. Please try again." });
+    }
+});
+app.delete('/cohorts/:id',async (req,res)=>{
+    const {id}=req.params;
+    try{
+        const deletedCohort=await Cohorts.findByIdAndDelete(id);
+        if(!deletedCohort){
+            return res.status(404).send("Cohort not found");
+        }
+        res.status(200).send({message:'Cohot deleted'});
+    }catch(error){
+        console.error(error);
+    }
+})
+app.put('/cohortupdate/:id',async(req,res)=>{
+    const {id}=req.params;
+    const {title}=req.body;
+    try{
+        const updateCohort=await Cohorts.findByIdAndUpdate(id,{title},{new:true});
+        if(!updateCohort){
+            alert("not updated");
+        }
+        res.status(200).send({message:'Cohort Updated'});
+    }catch(error){
+        console.error(error);
+    }
+})
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
