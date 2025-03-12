@@ -248,10 +248,6 @@ app.post('/addtech', async (req, res) => {
         res.status(500).json({ message: 'Server error. Please try again.' });
     }
 });
-
-<<<<<<< HEAD
-
-=======
 app.post("/addcohort",(req,res)=>{
     var newCohort=new Cohorts({
         title:req.body.title
@@ -266,7 +262,7 @@ app.get("/listcohorts",(Req,res)=>{
         .then(cohorts=>res.json(cohorts))
         .catch(err=>res.status(500).json({error:err.message}));
 })
-<<<<<<< HEAD
+
 app.post("/addstudent", async (req, res) => {
         const { cohortTitle, name } = req.body;
         const cohort = await Cohorts.findOne({ title: cohortTitle });
@@ -279,9 +275,7 @@ app.post("/addstudent", async (req, res) => {
         res.status(201).json({ message: "Student added successfully", cohort });
     
 });
-=======
->>>>>>> c169ccd64f2aaf98042e149e40e42f481289b515
->>>>>>> 2bc825d68d308b0760b5f0f1e8e609ec050a9115
+
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
