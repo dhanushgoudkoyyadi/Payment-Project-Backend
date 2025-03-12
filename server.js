@@ -264,6 +264,51 @@ app.get("/listcohorts",(Req,res)=>{
         .catch(err=>res.status(500).json({error:err.message}));
 })
 
+app.post("/addstudent", async (req, res) => {
+        const { cohortTitle, name } = req.body;
+        const cohort = await Cohorts.findOne({ title: cohortTitle });
+        if (!cohort) {
+            return res.status(404).json({ error: "Cohort not found" });
+        }
+        cohort.students.push({ name });
+        await cohort.save();
+
+        res.status(201).json({ message: "Student added successfully", cohort });
+    
+});
+
+app.delete("/removeStudent", async (req, res) => {
+    try {
+        const { cohortTitle, studentName } = req.body;
+
+        if (!cohortTitle || !studentName) {
+            return res.status(400).json({ message: "Cohort title and student name are required." });
+        }
+
+        const cohort = await Cohorts.findOne({ title: cohortTitle });
+        if (!cohort) {
+            return res.status(404).json({ message: "Cohort not found." });
+        }
+
+        // Find and remove the student
+        const studentIndex = cohort.students.findIndex(
+            (student) => student.name === studentName
+        );
+
+        if (studentIndex === -1) {
+            return res.status(404).json({ message: "Student not found in the cohort." });
+        }
+
+        cohort.students.splice(studentIndex, 1); // Remove the student
+        await cohort.save();
+
+        res.status(200).json({ message: "Student removed successfully.", cohort });
+    } catch (error) {
+        console.error("Error removing student:", error);
+        res.status(500).json({ message: "Server error. Please try again." });
+    }
+});
+
 // Server Setup
 const PORT = 5557;
 app.listen(PORT, () => {
