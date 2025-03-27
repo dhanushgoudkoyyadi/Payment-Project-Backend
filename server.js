@@ -337,48 +337,68 @@ app.put('/cohortupdate/:id', async (req, res) => {
     }
 });
 app.post("/add-students", async (req, res) => {
-    const { fromCohortId, toCohortId } = req.body;
-    console.log("Received Request: ", req.body); // Debugging
+    const { toCohortId, studentNames, fromCohortId } = req.body;
   
+    console.log("📥 Received Request Body:", req.body);
     try {
-      if (!fromCohortId || !toCohortId) {
-        return res.status(400).json({ message: "Both cohort IDs are required." });
+      // Validate input
+      if (!toCohortId || !Array.isArray(studentNames) || studentNames.length === 0) {
+        return res.status(400).json({
+          message: "Target cohort ID and non-empty studentNames array are required.",
+          received: req.body
+        });
       }
   
-      const fromCohort = await Cohorts.findById(fromCohortId);
       const toCohort = await Cohorts.findById(toCohortId);
-  
-      console.log("From Cohort:", fromCohort);
-      console.log("To Cohort:", toCohort);
-  
-      if (!fromCohort) {
-        return res.status(404).json({ message: "Source cohort not found." });
-      }
       if (!toCohort) {
         return res.status(404).json({ message: "Target cohort not found." });
       }
   
-      // Filter students that are not already in the target cohort
-      const newStudents = fromCohort.students.filter(
-        (student) => !toCohort.students.some((s) => s.name === student.name)
+      // Optional: Validate fromCohort if provided
+      let fromCohort = null;
+      if (fromCohortId) {
+        fromCohort = await Cohorts.findById(fromCohortId);
+        if (!fromCohort) {
+          return res.status(404).json({ message: "Source cohort not found." });
+        }
+      }
+  
+      // Filter out duplicates and invalid entries
+      const newStudents = studentNames.filter(
+        name => name && typeof name === 'string' &&
+        !toCohort.students.some(s => s.name === name)
       );
   
       if (newStudents.length === 0) {
-        return res.status(200).json({ message: "No new students to add." });
+        return res.status(200).json({
+          message: "All students already exist in target cohort or invalid names provided.",
+          skipped: studentNames
+        });
       }
   
-      toCohort.students.push(...newStudents);
+      // Add new students
+      newStudents.forEach(name => toCohort.students.push({ name }));
       await toCohort.save();
   
-      res.status(200).json({ message: "Students added successfully", toCohort });
+      // REMOVED: The code that was removing students from the source cohort
+  
+      res.status(200).json({
+        message: `Successfully transferred ${newStudents.length} student(s)`,
+        added: newStudents,
+        targetCohort: toCohort.title,
+        sourceCohort: fromCohort?.title || "N/A"
+      });
     } catch (error) {
-      console.error("Error adding students:", error);
-      res.status(500).json({ message: "Server error", error });
+      console.error("❌ Error transferring students:", error);
+      res.status(500).json({
+        message: "Server error during student transfer",
+        error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   });
-
 // Server Setup
-const PORT = 5557;
+const PORT = 6788
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
