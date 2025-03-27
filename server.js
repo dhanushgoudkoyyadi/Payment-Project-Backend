@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const User = require('./models/payment-schema');
-const Cohorts=require('./models/cohort-schema');
+const Cohorts = require('./models/cohort-schema');
 
 const app = express();
 app.use(cors());
@@ -57,7 +57,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, 
+    limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 // User Registration
@@ -94,7 +94,7 @@ app.post('/register', async (req, res) => {
 // Get All Users
 app.get('/users', async (req, res) => {
     try {
-        const users = await User.find({});
+        const users = await User.find({}).select('-password');
         res.json(users);
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -184,7 +184,7 @@ app.get('/users/:id', async (req, res) => {
             return res.status(400).json({ message: "Invalid user ID" });
         }
 
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select('-password');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -198,9 +198,9 @@ app.get('/users/:id', async (req, res) => {
 // Add New Course
 app.post('/addnewcourse', async (req, res) => {
     try {
-        const { userId,selectedCourse } = req.body;
-       
-        if (  !selectedCourse) {
+        const { userId, selectedCourse } = req.body;
+
+        if (!selectedCourse) {
             return res.status(400).json({ message: 'All Fields are required' });
         }
 
@@ -209,7 +209,7 @@ app.post('/addnewcourse', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const newCourse = {   course: selectedCourse };
+        const newCourse = { course: selectedCourse };
         user.newCourseDetails.push(newCourse);
         await user.save();
 
@@ -219,11 +219,12 @@ app.post('/addnewcourse', async (req, res) => {
         res.status(500).json({ message: 'Server error. Please try again.' });
     }
 });
+
 app.post('/addtech', async (req, res) => {
     try {
-        const { userId,  tech } = req.body;
+        const { userId, tech } = req.body;
 
-        if ( !Array.isArray(tech) || tech.length === 0) {
+        if (!Array.isArray(tech) || tech.length === 0) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
@@ -238,7 +239,7 @@ app.post('/addtech', async (req, res) => {
         }
 
         // Add new technology data
-        const newtech = {  technologies: tech };
+        const newtech = { technologies: tech };
         user.Technologies.push(newtech);
 
         await user.save();
@@ -249,32 +250,32 @@ app.post('/addtech', async (req, res) => {
     }
 });
 
-app.post("/addcohort",(req,res)=>{
-    var newCohort=new Cohorts({
-        title:req.body.title
+app.post("/addcohort", (req, res) => {
+    var newCohort = new Cohorts({
+        title: req.body.title
     });
     newCohort.save()
-    .then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
-    .catch(err => res.status(500).json({ error: err.message }));
+        .then(savedCohort => res.json({ msg: "cohort added", Cohorts: savedCohort }))
+        .catch(err => res.status(500).json({ error: err.message }));
 })
 
-app.get("/listcohorts",(Req,res)=>{
+app.get("/listcohorts", (Req, res) => {
     Cohorts.find()
-        .then(cohorts=>res.json(cohorts))
-        .catch(err=>res.status(500).json({error:err.message}));
+        .then(cohorts => res.json(cohorts))
+        .catch(err => res.status(500).json({ error: err.message }));
 })
 
 app.post("/addstudent", async (req, res) => {
-        const { cohortTitle, name } = req.body;
-        const cohort = await Cohorts.findOne({ title: cohortTitle });
-        if (!cohort) {
-            return res.status(404).json({ error: "Cohort not found" });
-        }
-        cohort.students.push({ name });
-        await cohort.save();
+    const { cohortTitle, name } = req.body;
+    const cohort = await Cohorts.findOne({ title: cohortTitle });
+    if (!cohort) {
+        return res.status(404).json({ error: "Cohort not found" });
+    }
+    cohort.students.push({ name });
+    await cohort.save();
 
-        res.status(201).json({ message: "Student added successfully", cohort });
-    
+    res.status(201).json({ message: "Student added successfully", cohort });
+
 });
 
 app.delete("/removeStudent", async (req, res) => {
@@ -306,6 +307,33 @@ app.delete("/removeStudent", async (req, res) => {
     } catch (error) {
         console.error("Error removing student:", error);
         res.status(500).json({ message: "Server error. Please try again." });
+    }
+});
+
+app.delete('/cohorts/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deletedCohort = await Cohorts.findByIdAndDelete(id);
+        if (!deletedCohort) {
+            return res.status(404).send("Cohort not found");
+        }
+        res.status(200).send({ message: 'Cohort deleted' });
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+app.put('/cohortupdate/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title } = req.body;
+    try {
+        const updateCohort = await Cohorts.findByIdAndUpdate(id, { title }, { new: true });
+        if (!updateCohort) {
+            alert("not updated");
+        }
+        res.status(200).send({ message: 'Cohort Updated' });
+    } catch (error) {
+        console.error(error);
     }
 });
 
