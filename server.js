@@ -336,6 +336,46 @@ app.put('/cohortupdate/:id', async (req, res) => {
         console.error(error);
     }
 });
+app.post("/add-students", async (req, res) => {
+    const { fromCohortId, toCohortId } = req.body;
+    console.log("Received Request: ", req.body); // Debugging
+  
+    try {
+      if (!fromCohortId || !toCohortId) {
+        return res.status(400).json({ message: "Both cohort IDs are required." });
+      }
+  
+      const fromCohort = await Cohorts.findById(fromCohortId);
+      const toCohort = await Cohorts.findById(toCohortId);
+  
+      console.log("From Cohort:", fromCohort);
+      console.log("To Cohort:", toCohort);
+  
+      if (!fromCohort) {
+        return res.status(404).json({ message: "Source cohort not found." });
+      }
+      if (!toCohort) {
+        return res.status(404).json({ message: "Target cohort not found." });
+      }
+  
+      // Filter students that are not already in the target cohort
+      const newStudents = fromCohort.students.filter(
+        (student) => !toCohort.students.some((s) => s.name === student.name)
+      );
+  
+      if (newStudents.length === 0) {
+        return res.status(200).json({ message: "No new students to add." });
+      }
+  
+      toCohort.students.push(...newStudents);
+      await toCohort.save();
+  
+      res.status(200).json({ message: "Students added successfully", toCohort });
+    } catch (error) {
+      console.error("Error adding students:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
+  });
 
 // Server Setup
 const PORT = 5557;
