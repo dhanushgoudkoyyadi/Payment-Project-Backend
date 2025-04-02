@@ -339,7 +339,7 @@ app.put('/cohortupdate/:id', async (req, res) => {
 app.post("/add-students", async (req, res) => {
     const { toCohortId, studentNames, fromCohortId } = req.body;
   
-    console.log("📥 Received Request Body:", req.body);
+   
     try {
       // Validate input
       if (!toCohortId || !Array.isArray(studentNames) || studentNames.length === 0) {
@@ -363,7 +363,7 @@ app.post("/add-students", async (req, res) => {
         }
       }
   
-      // Filter out duplicates and invalid entries
+     
       const newStudents = studentNames.filter(
         name => name && typeof name === 'string' &&
         !toCohort.students.some(s => s.name === name)
@@ -376,20 +376,20 @@ app.post("/add-students", async (req, res) => {
         });
       }
   
-      // Add new students
+      
       newStudents.forEach(name => toCohort.students.push({ name }));
       await toCohort.save();
   
-      // REMOVED: The code that was removing students from the source cohort
+      
   
       res.status(200).json({
-        message: `Successfully transferred ${newStudents.length} student(s)`,
+        message: `Successfully transferred ${newStudents.length} students`,
         added: newStudents,
         targetCohort: toCohort.title,
         sourceCohort: fromCohort?.title || "N/A"
       });
     } catch (error) {
-      console.error("❌ Error transferring students:", error);
+      console.error(" Error transferring students:", error);
       res.status(500).json({
         message: "Server error during student transfer",
         error: error.message,
